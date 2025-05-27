@@ -12,7 +12,7 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-// Registration request structure
+// Registration request structure used for the json parsing
 type RegisterRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -58,7 +58,7 @@ func hashPassword(password, salt string) string {
 	return fmt.Sprintf("%x", hash)	// Converts the hash byte array into a readable hexadecimal string
 }
 
-// Function to load users from JSON file. This function will be deleted introducing PostgreSQL
+// Function to load users from JSON file. THIS FUNCTION WILL BE REPLACED INTRODUCING POSTGRESQL
 func loadUsers() ([]User, error) {
 	var users []User
 
@@ -82,7 +82,7 @@ func loadUsers() ([]User, error) {
 	return users, err
 }
 
-// Function to save users in JSON file. This function will be replaced introducing PostgreSQL
+// Function to save users in JSON file. THIS FUNCTION WILL BE REPLACED INTRODUCING POSTGRESQL
 func saveUsers(users []User) error {
 	file, err := os.Create(usersFile)
 	if err != nil {
@@ -95,7 +95,7 @@ func saveUsers(users []User) error {
 	return encoder.Encode(users)
 }
 
-// Function to check if a user already exists. This function will be replaced introducing PostgreSQL
+// Function to check if a user already exists. THIS FUNCTION WILL BE REPLACED INTRODUCING POSTGRESQL
 func userExists(users []User, email string) bool {
 	for _, user := range users {
 		if user.Email == email {
@@ -121,47 +121,49 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	// Read the body of the request
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(Response{
+	body, err := io.ReadAll(r.Body)	// Save the content of the request in the body variable
+	if err != nil {	// If reading fails
+		w.WriteHeader(http.StatusBadRequest) // Responds to client with HTTP code 400
+		json.NewEncoder(w).Encode(Response{	// Create a json response to send to the server
 			Success: false,
-			Message: "Errore nella lettura della richiesta.",
+			Message: "Error reading request.",
 		})
 		return
 	}
 	
 	// Parsing JSON
-	var req RegisterRequest
-	err = json.Unmarshal(body, &req)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(Response{
+	var req RegisterRequest // Create a variable as a struct RegisterRequest.
+	err = json.Unmarshal(body, &req) // Fills the struct fields with the json parameters found.
+	if err != nil { // If it fails it means that the json is badly formatted and returns an error.
+		w.WriteHeader(http.StatusBadRequest) // Responds to client with HTTP code 400
+		json.NewEncoder(w).Encode(Response{ // Create a json response to send to the server
 			Success: false,
 			Message: "JSON non valido.",
 		})
 		return
 	}
 	
-	// Input Validation
+	// Input Validation. If the email or the password is empty, it returns an error
 	if req.Email == "" || req.Password == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(Response{
 			Success: false,
-			Message: "Email e password sono obbligatori.",
+			Message: "Email and password are required.",
 		})
 		return
 	}
 	
+	// Check if the email is valid by calling the isValidEmail function. If it's not, it returns error 400
 	if !isValidEmail(req.Email) {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(Response{
 			Success: false,
-			Message: "Formato email non valido.",
+			Message: "Invalid email format.",
 		})
 		return
 	}
 	
+	// Check if the password is valid. If it's not, it returns error 400
 	if len(req.Password) < 6 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(Response{
@@ -171,7 +173,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	// Load existing users
+	// Load existing users. THIS FUNCTION WILL BE REPLACED INTRODUCING POSTGRESQL
 	users, err := loadUsers()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -182,7 +184,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	// Check if the user already exists
+	// Check if the user already exists. THIS FUNCTION WILL BE REPLACED INTRODUCING POSTGRESQL
 	if userExists(users, req.Email) {
 		w.WriteHeader(http.StatusConflict)
 		json.NewEncoder(w).Encode(Response{
@@ -193,26 +195,27 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	// Generate password salt and hash
-	salt, err := generateSalt()
-	if err != nil {
+	salt, err := generateSalt()	// Call the generateSalt function and assign the value to the salt variable
+	if err != nil {	// If there was an error it returns error 500
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(Response{
 			Success: false,
-			Message: "Errore nella generazione del salt.",
+			Message: "Error generating salt.",
 		})
 		return
 	}
 	
+	// Generate password hash with Argon2id
 	passwordHash := hashPassword(req.Password, salt)
 	
-	// Create new user
+	// Create new user. THIS FUNCTION WILL BE REPLACED INTRODUCING POSTGRESQL
 	newUser := User{
 		Email:        req.Email,
 		PasswordHash: passwordHash,
 		Salt:         salt,
 	}
 	
-	// Add the user to the list and save
+	// Add the user to the list and save. THIS FUNCTION WILL BE REPLACED INTRODUCING POSTGRESQL
 	users = append(users, newUser)
 	err = saveUsers(users)
 	if err != nil {
@@ -224,7 +227,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	// Successful response
+	// Successful response. 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(Response{
 		Success: true,
