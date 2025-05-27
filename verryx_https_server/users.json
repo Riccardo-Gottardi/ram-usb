@@ -1,0 +1,12 @@
+[
+  {
+    "email": "test@example.com",
+    "password_hash": "c2a1961738bf61456f832b0ddcb39ff60d32ff1d1fc2ce96b64c33eef7d80b74",
+    "salt": "2f03bc603c468a0665c71bfac16060db"
+  },
+  {
+    "email": "tuo.email@ample.com",
+    "password_hash": "bb834f3d664729b22df0ddb473cc605c3015e05cd72a18701a08d7b7b69efaf9",
+    "salt": "70d0e8f6bb03184f8116912e97beee7d"
+  }
+]
