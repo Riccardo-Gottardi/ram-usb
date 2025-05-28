@@ -22,16 +22,22 @@ The first time I have to work on the project I have to create my development bra
 
 # Regular update of the branch you want to work on
 ```bash
+git chechout <source-branch-name>
+git pull <source-branch-name>
 git checkout <branch-name>
 git rebase <source-branch-name>
 ```
 **Ex.**
 ```bash
+git checkout main
+git pull
 git checkout dev/riccardo
 git rebase main
 ```
 Before working on new feature in my personal development baranch (that I've just swithced to)
 I make sure to have the fresh stuff from the main branch
+- Switch to `main`
+- Acquire "fresh stuff" from the remote `main`
 - Switch to `dev/riccardo`
 - Acquire "the fresh stuff" from `main`
 
