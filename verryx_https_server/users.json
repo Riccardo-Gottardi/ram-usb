@@ -8,5 +8,15 @@
     "email": "tuo.email@ample.com",
     "password_hash": "bb834f3d664729b22df0ddb473cc605c3015e05cd72a18701a08d7b7b69efaf9",
     "salt": "70d0e8f6bb03184f8116912e97beee7d"
+  },
+  {
+    "email": "francesco@gmail.com",
+    "password_hash": "f54b21096af19dd9d591f54a7dc5828ead07c32807282a45452c396bc36ef87b",
+    "salt": "51888d6c956630812f7baf2317039599"
+  },
+  {
+    "email": "your.email@example.com",
+    "password_hash": "8dc32a9a60c4553088a3f7747b7182566f5f56b9283fdf4c3ef3cffac9d97d41",
+    "salt": "162edda9a23a33f0032349950224905a"
   }
 ]
