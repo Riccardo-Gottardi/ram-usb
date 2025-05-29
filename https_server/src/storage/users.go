@@ -1,3 +1,10 @@
+/*
+User data storage operations for the backup service.
+Handles reading, writing, and querying user data from JSON files.
+This is a temporary implementation that will be replaced with PostgreSQL
+database operations for production use.
+*/
+
 package storage
 
 import (

@@ -1,3 +1,9 @@
+/*
+Password hashing and salt generation utilities for secure authentication.
+Implements Argon2id password hashing with cryptographically secure random
+salt generation to protect user passwords from rainbow table attacks.
+*/
+
 package crypto
 
 import (

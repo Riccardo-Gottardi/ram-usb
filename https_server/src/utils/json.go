@@ -1,3 +1,9 @@
+/*
+JSON processing utilities for API request/response handling.
+Contains functions for reading request bodies, parsing JSON data,
+and handling JSON-related errors.
+*/
+
 package utils
 
 import (

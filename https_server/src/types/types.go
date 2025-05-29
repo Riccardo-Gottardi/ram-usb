@@ -1,3 +1,9 @@
+/*
+Type definitions for the backup service application.
+Contains struct definitions for API requests, responses, and data models
+used throughout the application for consistent data handling.
+*/
+
 package types
 
 // Registration request structure

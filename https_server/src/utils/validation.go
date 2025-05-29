@@ -1,3 +1,9 @@
+/*
+Input validation utilities for user data verification.
+Implements validation functions for email addresses, SSH public keys,
+and other user inputs to ensure data integrity and security standards.
+*/
+
 package utils
 
 import (
