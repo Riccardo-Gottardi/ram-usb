@@ -1,3 +1,10 @@
+/*
+User registration handler for the backup service API.
+Handles POST requests to /api/register endpoint, validates user input,
+checks for existing users, generates secure password hashes, and stores
+new user registrations in JSON format (temporary storage before PostgreSQL).
+*/
+
 package handlers
 
 import (

@@ -1,3 +1,9 @@
+/*
+HTTP utility functions for request handling and validation.
+Provides common HTTP operations like method enforcement and
+request validation to ensure proper API usage.
+*/
+
 package utils
 
 import (

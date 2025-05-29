@@ -1,3 +1,9 @@
+/*
+Health check handler for the backup service API.
+Provides a simple endpoint to verify server status and connectivity.
+Returns a JSON response indicating the HTTPS server is working.
+*/
+
 package handlers
 
 import (
