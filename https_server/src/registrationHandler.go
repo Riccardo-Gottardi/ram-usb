@@ -61,6 +61,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the password is valid. If it's not, it returns error 400
+	// THIS SHOULD BE MODIFIED TO IMPROVE THE SCALABILITY OF THE CODE. IT SHOULD CALL A FUNCTION THAT CHECKS IF THE PASSWORD IS SUITABLE
 	if len(req.Password) < 6 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(Response{
@@ -123,7 +124,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		SSHPubKey:    req.SSHPubKey,
 	}
 
-	// Add the user to the list and save. THIS FUNCTION WILL BE REPLACED INTRODUCING POSTGRESQL
+	// Add the user to the json and save. THIS FUNCTION WILL BE REPLACED INTRODUCING POSTGRESQL
 	users = append(users, newUser)
 	err = saveUsers(users, usersFile)
 	if err != nil {

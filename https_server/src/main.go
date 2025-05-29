@@ -10,7 +10,7 @@ import (
 type RegisterRequest struct {
 	Email     string `json:"email"`
 	Password  string `json:"password"`
-	SSHPubKey string `json:"ssh_public_key"` // SSH public key field
+	SSHPubKey string `json:"ssh_public_key"`
 }
 
 // Login request structure.
@@ -24,7 +24,7 @@ type User struct {
 	Email        string `json:"email"`
 	PasswordHash string `json:"password_hash"`
 	Salt         string `json:"salt"`
-	SSHPubKey    string `json:"ssh_public_key"` // SSH public key field
+	SSHPubKey    string `json:"ssh_public_key"`
 }
 
 // Response structure
@@ -47,5 +47,5 @@ func main() {
 
 	// Start HTTPS server.
 	// log.fatal, if http.ListenAndServeTLS returns an error, print the error to the terminal and stop the server.
-	log.Fatal(http.ListenAndServeTLS("0.0.0.0:8443", "../priv/server.crt", "../priv/server.key", nil)) // The nil parameter indicates that the default handler will handle the request. The handler will handle it as told above.
+	log.Fatal(http.ListenAndServeTLS("0.0.0.0:8443", "../priv/server.crt", "../priv/server.key", nil)) // The nil parameter indicates that the default handler will handle the request. It will handle it as told above.
 }
