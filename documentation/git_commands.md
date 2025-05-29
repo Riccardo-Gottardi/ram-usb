@@ -55,8 +55,4 @@ git merge dev/riccardo
 ```
 Merging changes from your development branch to the main one
 - Switch to the `main` branch
-<<<<<<< HEAD
 - Merge from `dev/riccardo`
-=======
-- Merge from `dev/riccardo`
->>>>>>> dev/verryx_02
