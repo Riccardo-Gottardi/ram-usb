@@ -79,7 +79,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		errorMsg := fmt.Sprintf("Failed to initialize Security-Switch client: %v", err)
 		log.Printf("Error: %s", errorMsg)
 
-		// Determina il tipo di errore per dare una risposta più specifica
+		// Determine the type of error to give a more specific answer
 		if strings.Contains(err.Error(), "certificate") {
 			utils.SendErrorResponse(w, http.StatusInternalServerError,
 				"Certificate configuration error. Please contact administrator.")
@@ -93,16 +93,16 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Prova subito a contattare il Security-Switch per dare un errore più immediato
+	// Try contacting Security-Switch
 	log.Printf("Attempting to forward registration request for user: %s", req.Email)
 
 	switchResponse, err := securityClient.ForwardRegistration(req)
 	if err != nil {
-		// Errore più specifico per problemi di connessione
+		// Error due to connection problems
 		errorMsg := fmt.Sprintf("Failed to contact Security-Switch for %s: %v", req.Email, err)
 		log.Printf("Error: %s", errorMsg)
 
-		// Determina il tipo di errore di connessione
+		// Determine the type of connection error
 		if strings.Contains(err.Error(), "connection refused") {
 			utils.SendErrorResponse(w, http.StatusServiceUnavailable,
 				"Security-Switch service is unavailable. Please try again later.")
@@ -119,7 +119,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Controlla la risposta del Security-Switch
+	// Check the Security-Switch response
 	if !switchResponse.Success {
 		log.Printf("Security-Switch rejected registration for %s: %s", req.Email, switchResponse.Message)
 		utils.SendErrorResponse(w, http.StatusBadRequest,
@@ -127,7 +127,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Successo
+	// Success
 	log.Printf("User successfully registered via Security-Switch: %s", req.Email)
 	utils.SendSuccessResponse(w, http.StatusCreated, "User successfully registered!")
 }

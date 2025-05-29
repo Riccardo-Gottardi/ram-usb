@@ -6,7 +6,7 @@ database operations for production use.
 */
 
 /*
-MODIFICARE LoadUsers non deve più esistere
+WARNING: None of these functions are used. This file is deprecated
 */
 
 package storage
