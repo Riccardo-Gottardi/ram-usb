@@ -8,21 +8,19 @@ new user registrations in JSON format (temporary storage before PostgreSQL).
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
-	"https_server/crypto"
-	"https_server/storage"
+	"https_server/clients"
+	"https_server/config"
 	"https_server/types"
 	"https_server/utils"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // User registration handler
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Request: \n\tfrom:\t%s \n\tmethod:\t%s\n", r.RemoteAddr, r.Method)
-
-	const usersFile = "users.json"
 
 	// Set Content-Type to JSON
 	w.Header().Set("Content-Type", "application/json") // Tells the client that the response will be a json
@@ -43,108 +41,93 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Input Validation. If the email or the password is empty, it returns an error
+	// Input Validation
 	if req.Email == "" || req.Password == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(types.Response{
-			Success: false,
-			Message: "Email and password are required.",
-		})
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Email and password are required.")
 		return
 	}
 
 	// Check if the email is valid by calling the isValidEmail function. If it's not, it returns error 400
 	if !utils.IsValidEmail(req.Email) {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(types.Response{
-			Success: false,
-			Message: "Invalid email format.",
-		})
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid email format.")
 		return
 	}
 
 	// Check if the password is valid. If it's not, it returns error 400
 	// THIS SHOULD BE MODIFIED TO IMPROVE THE SCALABILITY OF THE CODE. IT SHOULD CALL A FUNCTION THAT CHECKS IF THE PASSWORD IS SUITABLE
 	if len(req.Password) < 6 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(types.Response{
-			Success: false,
-			Message: "Password must be at least 6 characters.",
-		})
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Password must be at least 6 characters.")
 		return
 	}
 
 	// Check if the SSH public key is valid. If it's not, it returns error 400
 	if !utils.IsValidSSHKey(req.SSHPubKey) {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(types.Response{
-			Success: false,
-			Message: "Invalid SSH public key format.",
-		})
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid SSH public key format.")
 		return
 	}
 
-	// Load existing users. THIS FUNCTION WILL BE REPLACED INTRODUCING POSTGRESQL
-	users, err := storage.LoadUsers(usersFile)
+	// Initialize Security-Switch client
+	config := config.GetConfig()
+	securityClient, err := clients.NewSecuritySwitchClient(
+		config.SecuritySwitchIP,
+		config.ClientCertFile,
+		config.ClientKeyFile,
+		config.CACertFile,
+	)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(types.Response{
-			Success: false,
-			Message: "Error loading users.",
-		})
+		// Errore più specifico per problemi di inizializzazione client
+		errorMsg := fmt.Sprintf("Failed to initialize Security-Switch client: %v", err)
+		log.Printf("Error: %s", errorMsg)
+
+		// Determina il tipo di errore per dare una risposta più specifica
+		if strings.Contains(err.Error(), "certificate") {
+			utils.SendErrorResponse(w, http.StatusInternalServerError,
+				"Certificate configuration error. Please contact administrator.")
+		} else if strings.Contains(err.Error(), "file") {
+			utils.SendErrorResponse(w, http.StatusInternalServerError,
+				"Certificate files not found. Please contact administrator.")
+		} else {
+			utils.SendErrorResponse(w, http.StatusInternalServerError,
+				"Security-Switch client initialization failed. Please contact administrator.")
+		}
 		return
 	}
 
-	// Check if the user already exists. THIS FUNCTION WILL BE REPLACED INTRODUCING POSTGRESQL
-	if storage.UserExists(users, req.Email) {
-		w.WriteHeader(http.StatusConflict)
-		json.NewEncoder(w).Encode(types.Response{
-			Success: false,
-			Message: "User already registered with this email.",
-		})
-		return
-	}
+	// Prova subito a contattare il Security-Switch per dare un errore più immediato
+	log.Printf("Attempting to forward registration request for user: %s", req.Email)
 
-	// Generate a random salt
-	salt, err := crypto.GenerateSalt() // Call the generateSalt function and assign the value to the salt variable
-	if err != nil {                    // If there was an error it returns error 500
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(types.Response{
-			Success: false,
-			Message: "Error generating salt.",
-		})
-		return
-	}
-
-	// Generate password hash with Argon2id
-	passwordHash := crypto.HashPassword(req.Password, salt)
-
-	// Create new user. THIS FUNCTION WILL BE REPLACED INTRODUCING POSTGRESQL
-	newUser := types.User{
-		Email:        req.Email,
-		PasswordHash: passwordHash,
-		Salt:         salt,
-		SSHPubKey:    req.SSHPubKey,
-	}
-
-	// Add the user to the json and save. THIS FUNCTION WILL BE REPLACED INTRODUCING POSTGRESQL
-	users = append(users, newUser)
-	err = storage.SaveUsers(users, usersFile)
+	switchResponse, err := securityClient.ForwardRegistration(req)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(types.Response{
-			Success: false,
-			Message: "Error saving user.",
-		})
+		// Errore più specifico per problemi di connessione
+		errorMsg := fmt.Sprintf("Failed to contact Security-Switch for %s: %v", req.Email, err)
+		log.Printf("Error: %s", errorMsg)
+
+		// Determina il tipo di errore di connessione
+		if strings.Contains(err.Error(), "connection refused") {
+			utils.SendErrorResponse(w, http.StatusServiceUnavailable,
+				"Security-Switch service is unavailable. Please try again later.")
+		} else if strings.Contains(err.Error(), "timeout") {
+			utils.SendErrorResponse(w, http.StatusGatewayTimeout,
+				"Security-Switch service timeout. Please try again later.")
+		} else if strings.Contains(err.Error(), "certificate") || strings.Contains(err.Error(), "tls") {
+			utils.SendErrorResponse(w, http.StatusInternalServerError,
+				"Security certificate validation failed. Please contact administrator.")
+		} else {
+			utils.SendErrorResponse(w, http.StatusBadGateway,
+				"Unable to reach Security-Switch service. Please try again later.")
+		}
 		return
 	}
 
-	// Successful response.
-	w.WriteHeader(http.StatusCreated) // Responds with 201. User created
-	json.NewEncoder(w).Encode(types.Response{
-		Success: true,
-		Message: "User successfully registered!",
-	})
+	// Controlla la risposta del Security-Switch
+	if !switchResponse.Success {
+		log.Printf("Security-Switch rejected registration for %s: %s", req.Email, switchResponse.Message)
+		utils.SendErrorResponse(w, http.StatusBadRequest,
+			fmt.Sprintf("Registration failed: %s", switchResponse.Message))
+		return
+	}
 
-	log.Printf("New registered user: %s", req.Email) // Writes to the server terminal
+	// Successo
+	log.Printf("User successfully registered via Security-Switch: %s", req.Email)
+	utils.SendSuccessResponse(w, http.StatusCreated, "User successfully registered!")
 }

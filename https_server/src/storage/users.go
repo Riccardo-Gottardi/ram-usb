@@ -6,7 +6,7 @@ database operations for production use.
 */
 
 /*
-MODIFICARE LoadUsers per fare in modo che al posto di caricare gli utenti
+MODIFICARE LoadUsers non deve più esistere
 */
 
 package storage
