@@ -5,6 +5,10 @@ This is a temporary implementation that will be replaced with PostgreSQL
 database operations for production use.
 */
 
+/*
+MODIFICARE LoadUsers per fare in modo che al posto di caricare gli utenti
+*/
+
 package storage
 
 import (

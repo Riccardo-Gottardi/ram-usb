@@ -15,7 +15,7 @@ import (
 
 func main() {
 	// Configure the routes
-	http.HandleFunc("/api/register", handlers.RegisterHandler)
+	http.HandleFunc("/api/h", handlers.RegisterHandler)
 	http.HandleFunc("/api/health", handlers.HealthHandler)
 
 	fmt.Println("Available endpoints:")
