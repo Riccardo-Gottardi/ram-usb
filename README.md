@@ -13,7 +13,7 @@ We set out to build a secure, distributed backup infrastructure that ensures **p
 - **Smart Access Control** — Only authenticated users can access storage nodes, using strict mTLS policies.
 - **Multi-User Support** — Each user has an isolated environment and encryption keys.
 - **Remote Access** — Users can perform secure backups and restores from anywhere in the world.
-- **Modern Cryptography** — Argon2id for password hashing, AES for encryption, SHA-256 for email hashing.
+- **Modern Cryptography** — Argon2id for email and password hashing, AES for encryption.
 
 ---
 
