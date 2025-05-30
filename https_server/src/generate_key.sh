@@ -50,22 +50,22 @@ IP.1 = 127.0.0.1
 IP.2 = ::1
 EOF
 
-# 6. Generate the server certificate signed by the CA
+# Generate the server certificate signed by the CA
 openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 365 -extensions v3_req -extfile server.conf
 
-# 7. Generate the client's private key (for mTLS)
+# Generate the client's private key (for mTLS)
 openssl genrsa -out client.key 4096
 
-# 8. Generate the client's Certificate Signing Request (CSR)
+# Generate the client's Certificate Signing Request (CSR)
 openssl req -new -key client.key -out client.csr -subj "/C=IT/ST=Friuli-Venezia Giulia/L=Udine/O=HTTPSClient/CN=backup-client"
 
-# 9. Generate the client certificate signed by the CA
+# Generate the client certificate signed by the CA
 openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days 365
 
-# 10. Clean up temporary files
+# Clean up temporary files
 rm -f server.csr client.csr server.conf
 
-# 11. Set correct permissions
+# Set correct permissions
 chmod 600 *.key
 chmod 644 *.crt
 
