@@ -1,9 +1,9 @@
-package clients
+package interfaces
 
 /*
 mTLS client for communicating with the Security-Switch server.
 Handles secure communication with the remote registration service
-using mutual TLS authentication for enhanced security.
+using mutual TLS authentication.
 */
 
 import (
@@ -16,14 +16,14 @@ import (
 	"time"
 )
 
-// SecuritySwitchClient handles communication with the Security-Switch server
-type SecuritySwitchClient struct {
+// EntryHubClient handles communication with the Security-Switch server (Entry-Hub -> Security-Switch)
+type EntryHubClient struct {
 	baseURL    string
 	httpClient *http.Client
 }
 
-// NewSecuritySwitchClient creates a new client for Security-Switch communication
-func NewSecuritySwitchClient(securitySwitchIP string, clientCertFile, clientKeyFile, caCertFile string) (*SecuritySwitchClient, error) {
+// NewEntryHubClient creates a new client for Entry-Hub -> Security-Switch communication
+func NewEntryHubClient(securitySwitchIP string, clientCertFile, clientKeyFile, caCertFile string) (*EntryHubClient, error) {
 	// Load client certificate and key for mTLS
 	clientCert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
 	if err != nil {
@@ -45,14 +45,14 @@ func NewSecuritySwitchClient(securitySwitchIP string, clientCertFile, clientKeyF
 		Timeout: 30 * time.Second,
 	}
 
-	return &SecuritySwitchClient{
+	return &EntryHubClient{
 		baseURL:    fmt.Sprintf("https://%s", securitySwitchIP),
 		httpClient: client,
 	}, nil
 }
 
 // ForwardRegistration forwards the registration request to Security-Switch
-func (c *SecuritySwitchClient) ForwardRegistration(req types.RegisterRequest) (*types.Response, error) {
+func (c *EntryHubClient) ForwardRegistration(req types.RegisterRequest) (*types.Response, error) {
 	// Convert request to JSON
 	jsonData, err := json.Marshal(req)
 	if err != nil {
