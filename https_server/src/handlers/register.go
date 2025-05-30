@@ -9,8 +9,8 @@ package handlers
 
 import (
 	"fmt"
-	"https_server/clients"
 	"https_server/config"
+	"https_server/interfaces"
 	"https_server/types"
 	"https_server/utils"
 	"log"
@@ -68,7 +68,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Initialize Security-Switch client
 	config := config.GetConfig()
-	securityClient, err := clients.NewSecuritySwitchClient(
+	securityClient, err := interfaces.NewEntryHubClient(
 		config.SecuritySwitchIP,
 		config.ClientCertFile,
 		config.ClientKeyFile,
