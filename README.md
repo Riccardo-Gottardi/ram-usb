@@ -6,7 +6,7 @@ We set out to build a secure, distributed backup infrastructure that ensures **p
 
 ---
 
-## 🔐 Key Features
+## Key Features
 
 - **Zero-Knowledge Design** — All user data is encrypted client-side; even we cannot access your files.
 - **Geo-Distributed Architecture** — The system can run across multiple physical nodes for redundancy and load balancing.
@@ -17,7 +17,7 @@ We set out to build a secure, distributed backup infrastructure that ensures **p
 
 ---
 
-## 🧱 System Architecture
+## System Architecture
 
 The system is composed of several distributed components:
 
