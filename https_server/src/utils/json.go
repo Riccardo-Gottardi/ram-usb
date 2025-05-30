@@ -8,35 +8,29 @@ package utils
 
 import (
 	"encoding/json"
-	"https_server/types"
 	"io"
 	"net/http"
 )
 
-// Reads and validates the request body
+// ReadRequestBody reads and validates the request body.
+// Returns the request body as a byte slice, or sends an error response and returns nil on failure.
 func ReadRequestBody(w http.ResponseWriter, r *http.Request) ([]byte, bool) {
-	body, err := io.ReadAll(r.Body) // Save the content of the request in the body variable
-	if err != nil {                 // If reading fails
-		w.WriteHeader(http.StatusBadRequest)      // Responds to client with HTTP code 400
-		json.NewEncoder(w).Encode(types.Response{ // Create a json response to send to the server
-			Success: false,
-			Message: "Error reading request.",
-		})
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		LogAndSendError(w, http.StatusBadRequest, "failed to read request body", "Error reading request.")
 		return nil, false
 	}
 	return body, true
 }
 
-// Parse the request body into the given struct
+// ParseJSONBody parses the request body into the given struct.
+// Returns false and sends an HTTP code 400 error response if parsing fails.
 func ParseJSONBody(body []byte, target interface{}, w http.ResponseWriter) bool {
 	// Attempt to unmarshal the JSON into the target struct
 	if err := json.Unmarshal(body, target); err != nil {
-		// Responds to client with HTTP code 400 if JSON is badly formatted
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(types.Response{
-			Success: false,
-			Message: "Invalid JSON.",
-		})
+		LogAndSendError(w, http.StatusBadRequest,
+			"failed to parse JSON body: "+err.Error(),
+			"Invalid JSON format.")
 		return false
 	}
 	return true

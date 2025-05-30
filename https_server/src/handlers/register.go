@@ -1,8 +1,13 @@
 /*
-User registration handler for the backup service API.
-Handles POST requests to /api/register endpoint, validates user input,
-checks for existing users, generates secure password hashes, and stores
-new user registrations in JSON format (temporary storage before PostgreSQL).
+User registration handler for the backup service REST API.
+Handles POST requests to /api/register endpoint.
+Parse the JSON
+Validates user input.
+Check if the email and the password are valid.
+Check if the SSH public key is valid.
+Initialize EntryHub interface.
+Forward the request to the Security-Switch.
+Check the Security-Switch response
 */
 
 package handlers
@@ -66,7 +71,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Initialize Security-Switch client
+	// Initialize EntryHub interface
 	config := config.GetConfig()
 	securityClient, err := interfaces.NewEntryHubClient(
 		config.SecuritySwitchIP,
@@ -75,7 +80,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		config.CACertFile,
 	)
 	if err != nil {
-		// Errore più specifico per problemi di inizializzazione client
+		// More specific error for client initialization problems
 		errorMsg := fmt.Sprintf("Failed to initialize Security-Switch client: %v", err)
 		log.Printf("Error: %s", errorMsg)
 

@@ -6,7 +6,8 @@ database operations for production use.
 */
 
 /*
-WARNING: None of these functions are used. This file is deprecated
+WARNING: None of these functions are used. This file is deprecated. It was used as a test.
+It's here because i don't want to whrow away some nice code.
 */
 
 package storage
