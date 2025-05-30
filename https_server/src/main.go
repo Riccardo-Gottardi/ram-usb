@@ -8,12 +8,20 @@ package main
 
 import (
 	"fmt"
+	"https_server/config"
 	"https_server/handlers"
 	"log"
 	"net/http"
 )
 
 func main() {
+	// Load configuration
+	cfg := config.GetConfig()
+
+	// Log configuration (without sensitive data)
+	fmt.Printf("Security-Switch IP: %s\n", cfg.SecuritySwitchIP)
+	fmt.Println("mTLS certificates configured")
+
 	// Configure the routes
 	http.HandleFunc("/api/register", handlers.RegisterHandler)
 	http.HandleFunc("/api/health", handlers.HealthHandler)

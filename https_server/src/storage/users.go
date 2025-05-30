@@ -5,6 +5,10 @@ This is a temporary implementation that will be replaced with PostgreSQL
 database operations for production use.
 */
 
+/*
+WARNING: None of these functions are used. This file is deprecated
+*/
+
 package storage
 
 import (

@@ -14,10 +14,12 @@ type RegisterRequest struct {
 }
 
 // Login request structure.
-//type LoginRequest struct {
-//	Email    string `json:"email"` // email hashed by the client using Argon2id
-//	Password string `json:"password"`
-//}
+/*
+type LoginRequest struct {
+	Email    string `json:"email"` // email hashed by the client using Argon2id
+	Password string `json:"password"`
+}
+*/
 
 // Structure to represent a user
 type User struct {
