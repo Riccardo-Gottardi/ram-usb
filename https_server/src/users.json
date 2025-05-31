@@ -1,8 +1,0 @@
-[
-  {
-    "email": "francescoverrengia62442@gmail.com",
-    "password_hash": "a4945c537c95f6f5275306a190f53c97a5ded0bc33a7c5c49720d701b0971890",
-    "salt": "77e685616236887047d574b5bdbc9a6b",
-    "ssh_public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL0wuHqWwYBcLWic6MCKs0AiF7KnVqVi4a5R27ED50yZ francescoverrengia62442@email.com"
-  }
-]

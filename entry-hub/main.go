@@ -34,5 +34,5 @@ func main() {
 	fmt.Println("To stop the server press Ctrl+C")
 
 	// Start the https server. nil indicates to use http.DefaultServeMux (Go's default multiplexer) as the HTTP request handler. This will follow the directions given above
-	log.Fatal(http.ListenAndServeTLS("0.0.0.0:8443", "../priv/server.crt", "../priv/server.key", nil))
+	log.Fatal(http.ListenAndServeTLS("0.0.0.0:8443", "../certificates/entry-hub/server.crt", "../certificates/entry-hub/server.key", nil))
 }
