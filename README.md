@@ -53,4 +53,4 @@ License: [MIT](LICENSE)
 
 Acknowledgments
 
-Special thanks to the University of Udine for supporting our research and experimentation in secure, distributed systems.
+Special thanks to the University of Udine, in particular to Professor Ivan Scagnetto, for supporting our research and experimentation on secure and distributed systems.
