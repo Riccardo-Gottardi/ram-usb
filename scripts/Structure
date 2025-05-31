@@ -7,7 +7,7 @@ backup-service/
 │   ├── keys_certificates.md
 │   └── deployment.md
 ├── certificates/
-│   ├── ca/
+│   ├── certification-authority/
 │   │   ├── ca.crt
 │   │   ├── ca.key
 │   │   └── ca.srl
