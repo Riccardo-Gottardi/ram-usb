@@ -18,9 +18,9 @@ type Config struct {
 // TODO: In production, load this from environment variables or config file
 func GetConfig() *Config {
 	return &Config{
-		SecuritySwitchIP: "100.93.246.69:8444", // Replace with actual Security-Switch IP and port. This is the macbook Tailscale IP
-		ClientCertFile:   "../priv/client.crt", // Path to client certificate for mTLS
-		ClientKeyFile:    "../priv/client.key", // Path to client private key for mTLS
-		CACertFile:       "../priv/ca.crt",     // Path to CA certificate
+		SecuritySwitchIP: "100.93.246.69:8444",                             // Replace with actual Security-Switch IP and port. This is the macbook Tailscale IP
+		ClientCertFile:   "../certificates/entry-hub/server.crt",           // Path to client certificate for mTLS
+		ClientKeyFile:    "../certificates/entry-hub/server.key",           // Path to client private key for mTLS
+		CACertFile:       "../certificates/certification-authority/ca.crt", // Path to CA certificate
 	}
 }
