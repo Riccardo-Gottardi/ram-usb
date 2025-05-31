@@ -10,10 +10,12 @@ using mutual TLS authentication.
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"https_server/types"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -35,11 +37,24 @@ func NewEntryHubClient(securitySwitchIP string, clientCertFile, clientKeyFile, c
 		return nil, fmt.Errorf("failed to load client certificate: %v", err)
 	}
 
+	// Load CA certificate for server verification
+	// DA COMMENTARE MEGLIO
+	caCert, err := os.ReadFile(caCertFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read CA certificate: %v", err)
+	}
+	// DA COMMENTARE MEGLIO
+	caCertPool := x509.NewCertPool()
+	if !caCertPool.AppendCertsFromPEM(caCert) {
+		return nil, fmt.Errorf("failed to parse CA certificate")
+	}
+
 	// Create a new configuration TLS with client certificate using the GO struct tls.config
 	tlsConfig := &tls.Config{ // Return a pointer to the struct created
-		Certificates: []tls.Certificate{clientCert},
-		// Note: We might need to add CA certificate validation here.
-		InsecureSkipVerify: false, // Set to false in production with proper CA
+		Certificates:       []tls.Certificate{clientCert},
+		RootCAs:            caCertPool,
+		ServerName:         "security-switch", // Must match the CN of the certificate
+		InsecureSkipVerify: false,             // Set to false in production with proper CA
 	}
 
 	// Create HTTP client with mTLS configuration
