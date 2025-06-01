@@ -24,7 +24,7 @@ import (
 //
 // Returns a new handler that includes mTLS verification
 func VerifyMTLS(next http.HandlerFunc) http.HandlerFunc {
-	// erifyMTLS returns an anonymous function that takes care of performing all the necessary checks
+	// VerifyMTLS returns an anonymous function that takes care of performing all the necessary checks
 	// before calling next
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Set JSON response header

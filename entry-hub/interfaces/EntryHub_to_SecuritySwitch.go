@@ -65,6 +65,7 @@ func NewEntryHubClient(securitySwitchIP string, clientCertFile, clientKeyFile, c
 		RootCAs:            caCertPool,                    // CA pool to verify the server
 		ServerName:         "security-switch",             // Must match the CN of the certificate
 		InsecureSkipVerify: false,                         // Set to false in production with proper CA
+		MinVersion:         tls.VersionTLS13,
 	}
 
 	// Create a custom HTTP client with the TLS configuration
