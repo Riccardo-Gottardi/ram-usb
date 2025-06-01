@@ -5,7 +5,7 @@ Parse the JSON
 Validates user input.
 Check if the email and the password are valid.
 Check if the SSH public key is valid.
-Initialize EntryHub interface.
+Initialize EntryHub_to_SecuritySwitch interface.
 Forward the request to the Security-Switch.
 Check the Security-Switch response
 */

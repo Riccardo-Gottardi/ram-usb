@@ -1,8 +1,8 @@
 package config
 
 /*
-Configuration settings for the HTTPS backup service.
-Contains server configuration including Security-Switch connection
+Configuration settings for the Entry-Hub HTTPS service.
+Contains server configuration including Security-Switch connection,
 parameters and mTLS certificate paths.
 */
 

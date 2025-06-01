@@ -4,8 +4,12 @@ package interfaces
 Security-Switch -> Database-Vault
 mTLS client for communicating with the Database-Vault service.
 Handles secure communication with the Database-Vault service
-for storing and retrieving user credentials using mutual TLS.
+for storing user credentials using mutual TLS.
 */
+
+// WARNING: Some functions are not explained in detail.
+// WARNING: Because they are very similar to those in the EntryHub_to_SecuritySwitch.go file,
+// WARNING: where they are explained in detail
 import (
 	"bytes"
 	"crypto/tls"
@@ -112,44 +116,4 @@ func (c *DatabaseVaultClient) CheckHealth() bool {
 	defer resp.Body.Close()
 
 	return resp.StatusCode == http.StatusOK
-}
-
-// RetrieveUserCredentials fetches user data from Database-Vault (for future login implementation)
-func (c *DatabaseVaultClient) RetrieveUserCredentials(email string) (*types.UserCredentials, error) {
-	// Create request payload
-	payload := map[string]string{"email": email}
-	jsonData, err := json.Marshal(payload)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %v", err)
-	}
-
-	// Create HTTP POST request
-	httpReq, err := http.NewRequest("POST", c.baseURL+"/api/get-user", bytes.NewBuffer(jsonData))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %v", err)
-	}
-
-	httpReq.Header.Set("Content-Type", "application/json")
-
-	// Send request
-	resp, err := c.httpClient.Do(httpReq)
-	if err != nil {
-		return nil, fmt.Errorf("failed to send request to Database-Vault: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Check response status
-	if resp.StatusCode != http.StatusOK {
-		var errResp types.Response
-		json.NewDecoder(resp.Body).Decode(&errResp)
-		return nil, fmt.Errorf("Database-Vault error: %s", errResp.Message)
-	}
-
-	// Parse user credentials
-	var userCreds types.UserCredentials
-	if err := json.NewDecoder(resp.Body).Decode(&userCreds); err != nil {
-		return nil, fmt.Errorf("failed to decode user credentials: %v", err)
-	}
-
-	return &userCreds, nil
 }

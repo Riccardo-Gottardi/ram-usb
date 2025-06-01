@@ -28,16 +28,6 @@ type HealthResponse struct {
 	Dependencies map[string]string `json:"dependencies,omitempty"`
 }
 
-// UserCredentials represents user data stored in Database-Vault
-type UserCredentials struct {
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
-	Salt         string `json:"salt"`
-	SSHPubKey    string `json:"ssh_public_key"`
-	CreatedAt    string `json:"created_at"`
-	UpdatedAt    string `json:"updated_at"`
-}
-
 // LoginRequest for future implementation
 type LoginRequest struct {
 	Email    string `json:"email"`

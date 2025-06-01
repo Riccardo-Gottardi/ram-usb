@@ -4,7 +4,7 @@ Implements Argon2id password hashing with cryptographically secure random
 salt generation to protect user passwords from rainbow table attacks.
 */
 
-// WARNING: This file must be used on the server on the Database-Vault so it must be moved
+// WARNING: This file must be used on the Database-Vault so it must be moved
 package crypto
 
 import (
