@@ -90,5 +90,4 @@ backup-service/
 │       └── validation.go
 └── scripts/
     ├── generate_certificates.sh
-    ├── setup_environment.sh
-    └── deploy.sh
+    └── setup_environment.sh

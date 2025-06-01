@@ -21,7 +21,7 @@ type Config struct {
 }
 
 // GetConfig returns the application configuration
-// TODO: In production, load this from environment variables or config file
+// WARNING: In production, load this from environment variables or config file
 func GetConfig() *Config {
 	return &Config{
 		// Security-Switch server settings
