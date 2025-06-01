@@ -13,9 +13,9 @@ import (
 // IsWeakPassword checks if a password is in the list of common weak passwords
 func IsWeakPassword(password string) bool {
 	weakPasswords := []string{
-		"password", "12345678", "qwerty", "admin", "123456",
-		"password123", "admin123", "letmein", "welcome",
-		"monkey", "dragon", "1234567890", "qwertyuiop",
+		"password", "12345678", "qwerty12", "admin123", "12345678",
+		"password123", "admin123", "letmein12", "welcome1",
+		"monkey12", "dragon12", "1234567890", "qwertyuiop",
 	}
 
 	lowerPass := strings.ToLower(password)

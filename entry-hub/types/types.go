@@ -15,7 +15,8 @@ type RegisterRequest struct {
 	SSHPubKey string `json:"ssh_public_key"`
 }
 
-// Login request structure. WARNING: The login is not implemented yet.
+// Login request structure.
+// WARNING: The login is not implemented yet.
 /*
 type LoginRequest struct {
 	Email    string `json:"email"` // email hashed by the client using Argon2id

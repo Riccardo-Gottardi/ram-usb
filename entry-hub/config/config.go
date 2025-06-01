@@ -2,8 +2,8 @@ package config
 
 /*
 Configuration settings for the Entry-Hub HTTPS service.
-Contains server configuration including Security-Switch connection,
-parameters and mTLS certificate paths.
+Contains server configuration including Security-Switch connection, parameters
+and mTLS certificate paths.
 */
 
 // Config holds the application configuration

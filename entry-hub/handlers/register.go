@@ -58,15 +58,38 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if the password is valid. If it's not, it returns error 400
-	// THIS SHOULD BE MODIFIED TO IMPROVE THE SCALABILITY OF THE CODE. IT SHOULD CALL A FUNCTION THAT CHECKS IF THE PASSWORD IS SUITABLE
-	if len(req.Password) < 6 {
-		utils.SendErrorResponse(w, http.StatusBadRequest, "Password must be at least 6 characters.")
+	// Check for suspicious patterns in email
+	if strings.Count(req.Email, "@") != 1 {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid email format.")
+		return
+	}
+
+	// Check if the password is valid.
+	if len(req.Password) < 8 {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Password must be at least 8 characters.")
+		return
+	}
+
+	// Check for common weak passwords
+	if utils.IsWeakPassword(req.Password) {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Password is too common, please choose a stronger password.")
+		return
+	}
+
+	// Check password complexity
+	if !utils.HasPasswordComplexity(req.Password) {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Password must contain at least 3 of: uppercase, lowercase, numbers, special characters.")
 		return
 	}
 
 	// Check if the SSH public key is valid. If it's not, it returns error 400
 	if !utils.IsValidSSHKey(req.SSHPubKey) {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid SSH public key format.")
+		return
+	}
+
+	// Verify SSH key has proper format
+	if !strings.HasPrefix(req.SSHPubKey, "ssh-") {
 		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid SSH public key format.")
 		return
 	}
