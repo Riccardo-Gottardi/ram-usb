@@ -20,7 +20,7 @@ We set out to build a secure, distributed backup infrastructure that ensures **p
 
 ## System Architecture
 
-The system is composed of several distributed components:
+The system is composed of several components:
 
 - **Entry-Hub**: Exposes an HTTPS REST API created by us for initial user authentication.
 - **Security-Switch**: Manages secure communication and access control between services using mutual TLS.
