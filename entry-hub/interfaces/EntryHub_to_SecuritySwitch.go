@@ -83,7 +83,7 @@ func NewEntryHubClient(securitySwitchIP string, clientCertFile, clientKeyFile, c
 	}, nil
 }
 
-// ForwardRegistration is a METHOD of the EntryHubClient struct
+// ForwardRegistration is a method of the EntryHubClient struct
 // It sends a registration request to the Security-Switch server using HTTPS with mTLS.
 //
 // Converts the request (struct RegisterRequest) to JSON format.
