@@ -20,7 +20,7 @@ import (
 
 // RegisterHandler processes registration requests from Entry-Hub
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	// Verify HTTP method
+	// Accepts POST requests only.
 	if !utils.EnforcePOST(w, r) {
 		return
 	}
@@ -36,14 +36,55 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if !utils.ParseJSONBody(body, &req, w) {
 		return
 	}
-
-	// Additional validation at Security-Switch level
-	if err := validateRegistrationRequest(req); err != nil {
-		utils.SendErrorResponse(w, http.StatusBadRequest, err.Error())
+	// Input Validation
+	if req.Email == "" || req.Password == "" {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Email and password are required.")
 		return
 	}
 
-	// Initialize Database-Vault client
+	// Check if the email is valid by calling the isValidEmail function. If it's not, it returns error 400
+	if !utils.IsValidEmail(req.Email) {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid email format.")
+		return
+	}
+
+	// Check for suspicious patterns in email
+	if strings.Count(req.Email, "@") != 1 {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid email format.")
+		return
+	}
+
+	// Check if the password is valid.
+	if len(req.Password) < 8 {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Password must be at least 8 characters.")
+		return
+	}
+
+	// Check for common weak passwords
+	if utils.IsWeakPassword(req.Password) {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Password is too common, please choose a stronger password.")
+		return
+	}
+
+	// Check password complexity
+	if !utils.HasPasswordComplexity(req.Password) {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Password must contain at least 3 of: uppercase, lowercase, numbers, special characters.")
+		return
+	}
+
+	// Check if the SSH public key is valid. If it's not, it returns error 400
+	if !utils.IsValidSSHKey(req.SSHPubKey) {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid SSH public key format.")
+		return
+	}
+
+	// Verify SSH key has proper format
+	if !strings.HasPrefix(req.SSHPubKey, "ssh-") {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid SSH public key format.")
+		return
+	}
+
+	// Initialize Database-Vault interface
 	cfg := config.GetConfig()
 	dbClient, err := interfaces.NewDatabaseVaultClient(
 		cfg.DatabaseVaultIP,
@@ -52,16 +93,20 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		cfg.CACertFile,
 	)
 	if err != nil {
+		// More specific error for client initialization problems
 		errorMsg := fmt.Sprintf("Failed to initialize Database-Vault client: %v", err)
 		log.Printf("Error: %s", errorMsg)
 
-		// Determine error type for specific response
+		// Determine the type of error to give a more specific answer
 		if strings.Contains(err.Error(), "certificate") {
 			utils.SendErrorResponse(w, http.StatusInternalServerError,
-				"Database-Vault certificate configuration error. Please contact administrator.")
+				"Certificate configuration error. Please contact administrator.")
+		} else if strings.Contains(err.Error(), "file") {
+			utils.SendErrorResponse(w, http.StatusInternalServerError,
+				"Certificate files not found. Please contact administrator.")
 		} else {
 			utils.SendErrorResponse(w, http.StatusInternalServerError,
-				"Failed to connect to Database-Vault service.")
+				"Security-Switch client initialization failed. Please contact administrator.")
 		}
 		return
 	}
@@ -99,34 +144,4 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Success - user credentials stored
 	log.Printf("User successfully registered: %s", req.Email)
 	utils.SendSuccessResponse(w, http.StatusCreated, "User successfully registered!")
-}
-
-// validateRegistrationRequest performs additional security checks
-func validateRegistrationRequest(req types.RegisterRequest) error {
-	// Check for suspicious patterns in email
-	if strings.Count(req.Email, "@") != 1 {
-		return fmt.Errorf("invalid email format")
-	}
-
-	// Check password strength (basic check, enhance as needed)
-	if len(req.Password) < 8 {
-		return fmt.Errorf("password must be at least 8 characters")
-	}
-
-	// Verify SSH key has proper format
-	if !strings.HasPrefix(req.SSHPubKey, "ssh-") {
-		return fmt.Errorf("invalid SSH public key format")
-	}
-
-	// Check for common weak passwords
-	if utils.IsWeakPassword(req.Password) {
-		return fmt.Errorf("password is too common, please choose a stronger password")
-	}
-
-	// Check password complexity
-	if !utils.HasPasswordComplexity(req.Password) {
-		return fmt.Errorf("password must contain at least 3 of: uppercase, lowercase, numbers, special characters")
-	}
-
-	return nil
 }

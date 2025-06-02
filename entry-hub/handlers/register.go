@@ -30,7 +30,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Set Content-Type to JSON
 	w.Header().Set("Content-Type", "application/json") // Tells the client that the response will be a json
 
-	if !utils.EnforcePOST(w, r) { // Accepts POST requests only.
+	// Accepts POST requests only.
+	if !utils.EnforcePOST(w, r) {
 		return
 	}
 
