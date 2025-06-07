@@ -1,10 +1,12 @@
 /*
-Password hashing and salt generation utilities for secure authentication.
-Implements Argon2id password hashing with cryptographically secure random
-salt generation to protect user passwords from rainbow table attacks.
-*/
+Password hashing utilities for secure user authentication.
 
-// WARNING: This file must be used on the Database-Vault so it must be moved
+Implements Argon2id password hashing with cryptographically secure salt
+generation to defend against rainbow table attacks and GPU-based brute force.
+Uses memory-hard algorithm parameters to resist specialized hardware attacks.
+
+TO-DO in package: Move this file to Database-Vault for proper architecture separation
+*/
 package crypto
 
 import (
@@ -14,20 +16,48 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-// Function to generate a random salt.
-// NOTE: _ is used to ignore the first parameter returned by the rand.Read function.
+// GenerateSalt creates cryptographically secure random salt for password hashing.
+//
+// Security features:
+// - Uses crypto/rand for unpredictable entropy source
+// - 16-byte length provides sufficient uniqueness against collisions
+// - Hexadecimal encoding prevents binary storage issues
+//
+// Returns hex-encoded salt string and error if entropy source fails.
 func GenerateSalt() (string, error) {
-	salt := make([]byte, 16)  // Create a 16byte empty slice
-	_, err := rand.Read(salt) // fills the passed slice with cryptographically secure random bytes.
+	// SALT GENERATION
+	// Create 16-byte buffer for cryptographically secure randomness
+	salt := make([]byte, 16)
+	_, err := rand.Read(salt)
 	if err != nil {
+		// Entropy source failure - critical security error
 		return "", err
 	}
-	return fmt.Sprintf("%x", salt), nil //Converts the 16 random bytes to a hexadecimal string to represent binary data in a readable way
+
+	// ENCODING
+	// Convert to hexadecimal for safe database storage and transmission
+	return fmt.Sprintf("%x", salt), nil
 }
 
-// Function to hash password with Argon2
+// HashPassword generates Argon2id hash with provided salt for secure storage.
+//
+// Security features:
+// - Argon2id algorithm resists both time-memory and side-channel attacks
+// - Memory-hard parameters (32MB) defend against GPU acceleration
+// - Single iteration with medium-high memory usage balances security and performance
+//
+// Returns hex-encoded hash suitable for database storage.
 func HashPassword(password, salt string) string {
-	saltBytes := []byte(salt)                                            // Converts the salt to a byte array because argon2.IDKey requires it
-	hash := argon2.IDKey([]byte(password), saltBytes, 1, 32*1024, 4, 32) //hash password with Argon2id using 1 iteration, 32bytes of RAM, 4 CPU threads. Produces a 32byte hash.
-	return fmt.Sprintf("%x", hash)                                       // Converts the hash byte array into a readable hexadecimal string
+	// PARAMETER CONVERSION
+	// Convert salt to bytes for Argon2id algorithm requirements
+	saltBytes := []byte(salt)
+
+	// ARGON2ID HASHING
+	// Parameters: 1 iteration, 32MB memory, 4 threads, 32-byte output
+	// Chosen to resist GPU attacks while maintaining reasonable server performance
+	hash := argon2.IDKey([]byte(password), saltBytes, 1, 32*1024, 4, 32)
+
+	// ENCODING
+	// Convert hash to hexadecimal for consistent storage format
+	return fmt.Sprintf("%x", hash)
 }

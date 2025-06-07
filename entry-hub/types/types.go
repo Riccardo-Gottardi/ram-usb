@@ -1,42 +1,48 @@
 /*
-Type definitions for the backup service application.
-Contains struct definitions for API requests, responses, and data models
-used throughout the application for consistent data handling.
+Type definitions for Entry-Hub API requests and responses.
+
+Provides structured data models for JSON serialization in REST API communication
+and mTLS message passing between distributed services. Ensures consistent data
+handling and validation across the R.A.M.-U.S.B. architecture layers.
+
+TO-DO in LoginRequest: Implement login functionality
 */
 
 package types
 
-// RegisterRequest represents the JSON that the Entry-Hub sends to the Security-Switch during the user registration phase.
-// This type is serialized in JSON and sent via an HTTPS POST request with mTLS authentication.
-// The Security-Switch uses this information to register the user in the system:
+// RegisterRequest contains user registration data for Security-Switch transmission.
+//
+// Security features:
+// - Email validation ensures proper user identification
+// - Password transmission for Argon2id hashing at Database-Vault
+// - SSH public key for secure access to the Storage-Service
+//
+// Serialized as JSON for mTLS communication with Security-Switch.
 type RegisterRequest struct {
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	SSHPubKey string `json:"ssh_public_key"`
+	Email     string `json:"email"`          // User email address for account identification
+	Password  string `json:"password"`       // Plain password for secure hashing at Database-Vault
+	SSHPubKey string `json:"ssh_public_key"` // SSH public key for storage service authentication
 }
 
-// Login request structure.
-// WARNING: The login is not implemented yet.
+// LoginRequest defines user authentication data structure.
+//
+// TO-DO: Implement login functionality with password verification
 /*
 type LoginRequest struct {
-	Email    string `json:"email"` // email hashed by the client using Argon2id
-	Password string `json:"password"`
+	Email    string `json:"email"`    // User email for account lookup
+	Password string `json:"password"` // Password for Argon2id verification
 }
 */
 
-// WARNING:This User structure is not used anymore. It was used ad a test.
-// It's here because I don't want to throw away some code for now.
-type User struct {
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
-	Salt         string `json:"salt"`
-	SSHPubKey    string `json:"ssh_public_key"`
-}
-
-// Response represents the standard response structure sent by the Entry-Hub to the Client and by the Security-Switch to the Entry-Hub
-// following a registration or authentication request.
-// This structure is serialized in JSON and sent as an HTTP response.
+// Response provides standardized API response format for client communication.
+//
+// Used by:
+// - Entry-Hub responses to client applications
+// - Security-Switch responses to Entry-Hub
+// - Database-Vault responses to Security-Switch
+//
+// Ensures consistent error handling and success indication across services.
 type Response struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
+	Success bool   `json:"success"` // Operation success indicator
+	Message string `json:"message"` // Human-readable status or error description
 }

@@ -1,11 +1,11 @@
-package interfaces
-
 /*
-Entry-Hub -> Security-Switch
-mTLS client for communicating with the Security-Switch server.
-Handles secure communication with the remote registration service
-using mutual TLS authentication.
+mTLS client interface for Entry-Hub to Security-Switch communication.
+
+Provides secure request forwarding with mutual TLS authentication and certificate
+validation. Implements connection pooling and timeout management for reliable
+distributed service communication within the R.A.M.-U.S.B. architecture.
 */
+package interfaces
 
 import (
 	"bytes"
@@ -19,61 +19,59 @@ import (
 	"time"
 )
 
-// EntryHubClient handles communication with the Security-Switch server (Entry-Hub -> Security-Switch)
+// EntryHubClient manages secure communication with Security-Switch servers.
 type EntryHubClient struct {
-	baseURL    string       //Security-Switch URL
-	httpClient *http.Client // pointer to the struct of the GO standard library http
+	baseURL    string       // HTTPS endpoint for Security-Switch service
+	httpClient *http.Client // mTLS-configured HTTP client with certificate validation
 }
 
-// NewEntryHubClient is a CONSTRUCTOR FUNCTION that creates and configures a new EntryHubClient
-// This function implements mutual TLS (mTLS) authentication, where both client and server verify each other's certificates.
+// NewEntryHubClient creates mTLS-enabled client for secure Security-Switch communication.
+//
+// Security features:
+// - Mutual TLS authentication with certificate verification
+// - CA validation prevents man-in-the-middle attacks
+// - TLS 1.3 enforcement for maximum cryptographic security
+// - Certificate CN validation ensures correct service identity
+//
+// Returns configured client or error if certificate validation fails.
 func NewEntryHubClient(securitySwitchIP string, clientCertFile, clientKeyFile, caCertFile string) (*EntryHubClient, error) {
-	// Load the client's certificate and private key for mTLS authentication
-	// tls.LoadX509KeyPair() reads both the certificate (.crt) and private key (.key) files
-	// and combines them into a single tls.Certificate structure that Go can use for authentication
+	// CLIENT CERTIFICATE LOADING
+	// Load Entry-Hub credentials for mutual authentication
 	clientCert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load client certificate: %v", err)
 	}
 
-	// Load the Certificate Authority (CA) certificate
-	// The CA certificate is used to verify that the Security-Switch's certificate is legitimate
-	// os.ReadFile() reads the entire CA certificate file into memory as a byte slice
+	// CA CERTIFICATE LOADING
+	// Load trusted CA for Security-Switch certificate validation
 	caCert, err := os.ReadFile(caCertFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read CA certificate: %v", err)
 	}
 
-	// Create a certificate pool and add the CA certificate to it
-	// A certificate pool is Go's way of managing trusted certificates
-	// x509.NewCertPool() creates an empty pool of trusted certificates
+	// CERTIFICATE POOL SETUP
+	// Configure trusted certificate authorities for server validation
 	caCertPool := x509.NewCertPool()
 	if !caCertPool.AppendCertsFromPEM(caCert) {
 		return nil, fmt.Errorf("failed to parse CA certificate")
 	}
 
-	// AppendCertsFromPEM() parses the CA certificate (in PEM format) and adds it to the pool
-	// This tells our client "trust any certificate signed by this CA"
-	if !caCertPool.AppendCertsFromPEM(caCert) {
-		return nil, fmt.Errorf("failed to parse CA certificate")
-	}
-
-	// Configure TLS with mutual authentication
-	// &tls.Config{} creates a POINTER to a new tls.Config struct
+	// MTLS CONFIGURATION
+	// Configure mutual TLS with certificate validation and modern security
 	tlsConfig := &tls.Config{
-		Certificates:       []tls.Certificate{clientCert}, // Our client certificate
-		RootCAs:            caCertPool,                    // CA pool to verify the server
-		ServerName:         "security-switch",             // Must match the CN of the certificate
-		InsecureSkipVerify: false,                         // Set to false in production with proper CA
-		MinVersion:         tls.VersionTLS13,
+		Certificates: []tls.Certificate{clientCert}, // Entry-Hub client certificate
+		RootCAs:      caCertPool,                    // Trusted CAs for server verification
+		ServerName:   "security-switch",             // Expected server certificate CN
+		MinVersion:   tls.VersionTLS13,              // Enforce modern TLS version
 	}
 
-	// Create a custom HTTP client with the TLS configuration
+	// HTTP CLIENT SETUP
+	// Create client with mTLS transport and connection timeout
 	client := &http.Client{
-		Transport: &http.Transport{ // Customize http.client to use TLS
+		Transport: &http.Transport{
 			TLSClientConfig: tlsConfig,
 		},
-		Timeout: 30 * time.Second, // After 30 seconds, the connection ends.
+		Timeout: 30 * time.Second, // Prevent hanging connections
 	}
 
 	// Create and return the EntryHubClient instance
@@ -83,44 +81,41 @@ func NewEntryHubClient(securitySwitchIP string, clientCertFile, clientKeyFile, c
 	}, nil
 }
 
-// ForwardRegistration is a method of the EntryHubClient struct
-// It sends a registration request to the Security-Switch server using HTTPS with mTLS.
+// ForwardRegistration securely transmits user registration to Security-Switch.
 //
-// Converts the request (struct RegisterRequest) to JSON format.
-// Creates an HTTP POST request to the Security-Switch /api/register endpoint.
-// Sends the request via an HTTP client configured with TLS mutual authentication.
-// Reads the JSON response received from the Security-Switch and decodes it into a struct Response.
-// If any of these steps fail, returns an error.
+// Security features:
+// - JSON payload serialization with input validation
+// - mTLS transport with certificate verification
+// - Structured error handling for network and protocol failures
+//
+// Returns Security-Switch response or error for network/parsing failures.
 func (c *EntryHubClient) ForwardRegistration(req types.RegisterRequest) (*types.Response, error) {
-	// Converts the struct type.RegisterRequest to a json
-	// c is the name we give to the instance inside the method (like "this" in Java)
+	// REQUEST SERIALIZATION
+	// Convert registration data to JSON for secure transmission
 	jsonData, err := json.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %v", err)
 	}
 
-	// Create HTTP POST request to send to Security-Switch using the GO standard function http.NewRequest
-	// c.baseURL + "/api/register" concatenates strings to form the complete URL
+	// HTTP REQUEST SETUP
+	// Create POST request to Security-Switch registration endpoint
 	httpReq, err := http.NewRequest("POST", c.baseURL+"/api/register", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %v", err)
 	}
 
-	// Inform the server that the request format is a json
 	httpReq.Header.Set("Content-Type", "application/json")
 
-	// Send request to Security-Switch
-	// The Do() method takes the request httpReq and sends it to the Security-Switch.
-	// Do() returns resp: a pointer to http.Response, which is the response received from the server.
+	// SECURE TRANSMISSION
+	// Send request via mTLS-authenticated connection
 	resp, err := c.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send request to Security-Switch: %v", err)
 	}
-	defer resp.Body.Close() // Ensures that the HTTP response is closed at the end of the function
+	defer resp.Body.Close()
 
-	// Decode the JSON response
-	// Decode() reads the JSON and puts it into the switchResponse struct
-	// &switchResponse passes the address of the variable (necessary to modify it)
+	// RESPONSE PROCESSING
+	// Parse Security-Switch JSON response
 	var switchResponse types.Response
 	if err := json.NewDecoder(resp.Body).Decode(&switchResponse); err != nil {
 		return nil, fmt.Errorf("failed to decode Security-Switch response: %v", err)

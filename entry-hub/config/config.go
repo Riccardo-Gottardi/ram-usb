@@ -1,26 +1,42 @@
+/*
+Configuration management for Entry-Hub HTTPS service.
+
+Provides centralized configuration including Security-Switch connection
+parameters and mTLS certificate paths. Uses hardcoded values for development.
+
+TO-DO in GetConfig()
+*/
 package config
 
-/*
-Configuration settings for the Entry-Hub HTTPS service.
-Contains server configuration including Security-Switch connection, parameters
-and mTLS certificate paths.
-*/
-
-// Config holds the application configuration
+// Config holds Entry-Hub application configuration parameters.
 type Config struct {
-	SecuritySwitchIP string
-	ClientCertFile   string
-	ClientKeyFile    string
-	CACertFile       string
+	SecuritySwitchIP string // Tailscale IP address for secure mesh communication
+	ClientCertFile   string // mTLS client certificate path for Security-Switch authentication
+	ClientKeyFile    string // mTLS private key path for secure communication
+	CACertFile       string // Certificate Authority for validating Security-Switch certificates
 }
 
-// GetConfig returns the application configuration
-// TODO: In production, load this from environment variables or config file
+// GetConfig returns Entry-Hub configuration with security connection parameters.
+//
+// Security features:
+// - Hardcoded Tailscale IPs prevent external network exposure
+// - mTLS certificate paths ensure mutual authentication
+// - CA validation prevents man-in-the-middle attacks
+//
+// Returns pointer to Config struct with all required connection parameters.
+//
+// TO-DO: In production, load this from environment variables or config file.
+// TO-DO: Replace with actual Security-Switch IP and port. This is the macbook Tailscale IP
 func GetConfig() *Config {
 	return &Config{
-		SecuritySwitchIP: "100.93.246.69:8444",                             // Replace with actual Security-Switch IP and port. This is the macbook Tailscale IP
-		ClientCertFile:   "../certificates/entry-hub/client.crt",           // Path to client certificate for mTLS
-		ClientKeyFile:    "../certificates/entry-hub/client.key",           // Path to client private key for mTLS
-		CACertFile:       "../certificates/certification-authority/ca.crt", // Path to CA certificate
+		// SECURITY-SWITCH CONNECTION
+		// Use Tailscale private network to prevent external access
+		SecuritySwitchIP: "100.93.246.69:8444",
+
+		// MTLS CERTIFICATE CONFIGURATION
+		// Client credentials for mutual TLS authentication with Security-Switch
+		ClientCertFile: "../certificates/entry-hub/client.crt",
+		ClientKeyFile:  "../certificates/entry-hub/client.key",
+		CACertFile:     "../certificates/certification-authority/ca.crt",
 	}
 }
