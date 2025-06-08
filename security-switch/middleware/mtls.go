@@ -1,10 +1,13 @@
-package middleware
-
 /*
-mTLS middleware for Security-Switch request validation.
-Verifies client certificates and ensures only authenticated
-Entry-Hub instances can communicate with the Security-Switch.
+mTLS middleware for Security-Switch request validation and authentication.
+
+Implements certificate-based client authentication to ensure only authorized
+Entry-Hub instances can communicate with Security-Switch endpoints. Provides
+comprehensive certificate validation including TLS connection verification,
+client certificate presence, and organizational authorization checks within
+the zero-trust inter-service architecture.
 */
+package middleware
 
 import (
 	"fmt"
@@ -13,72 +16,68 @@ import (
 	"security_switch/utils"
 )
 
-// VerifyMTLS is a MIDDLEWARE FUNCTION that verifies the client certificate
+// VerifyMTLS creates middleware function for mTLS client certificate validation.
 //
-// This specific middleware ensures that:
-// 1) The connection uses TLS
-// 2) A valid client certificate was provided
-// 3) The certificate comes from an authorized Entry-Hub
+// Security features:
+// - TLS connection state verification prevents non-encrypted requests
+// - Client certificate presence validation ensures mutual authentication
+// - Organizational authorization restricts access to EntryHub services only
+// - Comprehensive logging provides audit trail for security monitoring
 //
-// # The parameter "next" is the original handler function to call after verification
-//
-// Returns a new handler that includes mTLS verification
+// Returns wrapped handler function with mTLS authentication or error response for unauthorized requests.
 func VerifyMTLS(next http.HandlerFunc) http.HandlerFunc {
-	// VerifyMTLS returns an anonymous function that takes care of performing all the necessary checks
-	// before calling next
+	// MIDDLEWARE WRAPPER FUNCTION
+	// Returns anonymous function that performs mTLS verification before calling next handler
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Set JSON response header
+		// JSON RESPONSE SETUP
+		// Ensure consistent content type for error responses
 		w.Header().Set("Content-Type", "application/json")
 
-		// Check if the request has TLS connection info
-		// r.TLS contains TLS connection state information
-		// If r.TLS is nil, it means the connection is not using TLS
+		// TLS CONNECTION VERIFICATION
+		// Ensure request uses encrypted TLS transport
 		if r.TLS == nil {
-			// Log the security violation
-			// r.RemoteAddr contains the client's IP address and port
+			// Non-TLS connection attempt - security violation
 			log.Printf("Request without TLS from %s", r.RemoteAddr)
-
-			// Send HTTP 401 Unauthorized response and stop processing
-			// We don't call next() because this request is not authorized
 			utils.SendErrorResponse(w, http.StatusUnauthorized, "TLS required")
 			return
 		}
 
-		// Verify that client certificate was provided
-		// r.TLS.PeerCertificates is a slice containing the client's certificate
-		// len() returns 0 if no certificates were provided
+		// CLIENT CERTIFICATE VERIFICATION
+		// Verify that client presented certificate for mutual authentication
 		if len(r.TLS.PeerCertificates) == 0 {
+			// Missing client certificate - authentication failure
 			log.Printf("Request without client certificate from %s", r.RemoteAddr)
 			utils.SendErrorResponse(w, http.StatusUnauthorized, "Client certificate required")
 			return
 		}
 
-		// Extract and examine the client certificate
-		// PeerCertificates[0] is the client's certificate
-		// The certificate contains information about who issued it and to whom
+		// CERTIFICATE EXTRACTION AND LOGGING
+		// Extract client certificate for detailed validation
 		clientCert := r.TLS.PeerCertificates[0]
 
-		// Log successful mTLS authentication
+		// AUTHENTICATION SUCCESS LOGGING
+		// Log successful mTLS authentication with certificate details
 		log.Printf("mTLS authenticated request from %s (CN=%s, O=%s)",
-			// clientCert.Subject contains the certificate's subject information:
-			// - CommonName (CN): the service/host name
-			// - Organization (O): the company/department name
 			r.RemoteAddr,
 			clientCert.Subject.CommonName,
 			clientCert.Subject.Organization)
 
-		// Check that the certificate was issued to "EntryHub" organization
+		// ORGANIZATIONAL AUTHORIZATION
+		// Verify client belongs to authorized EntryHub organization
 		if len(clientCert.Subject.Organization) == 0 || clientCert.Subject.Organization[0] != "EntryHub" {
+			// Unauthorized organization - access denied
 			log.Printf("Unauthorized client organization: %v", clientCert.Subject.Organization)
 			utils.SendErrorResponse(w, http.StatusForbidden, "Unauthorized client")
 			return
 		}
 
-		// Log the request details
+		// REQUEST AUDIT LOGGING
+		// Log authenticated request details for security monitoring
 		fmt.Printf("Authenticated request: \n\tfrom:\t%s \n\tmethod:\t%s\n\tpath:\t%s\n",
 			r.RemoteAddr, r.Method, r.URL.Path)
 
-		// Call the next handler
+		// AUTHORIZED REQUEST FORWARDING
+		// Call original handler after successful mTLS verification
 		next(w, r)
 	}
 }

@@ -5,6 +5,7 @@ Provides centralized configuration including Security-Switch connection
 parameters and mTLS certificate paths. Uses hardcoded values for development.
 
 TO-DO in GetConfig()
+TO-DO: Add GetPepper() function for password pepper from environment variables
 */
 package config
 
@@ -27,6 +28,7 @@ type Config struct {
 //
 // TO-DO: In production, load this from environment variables or config file.
 // TO-DO: Replace with actual Security-Switch IP and port. This is the macbook Tailscale IP
+// TO-DO: Load pepper from PASSWORD_PEPPER environment variable with fatal error if missing
 func GetConfig() *Config {
 	return &Config{
 		// SECURITY-SWITCH CONNECTION

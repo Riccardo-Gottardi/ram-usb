@@ -18,7 +18,7 @@ import (
 //
 // Security features:
 // - No sensitive information disclosure in response
-// - Minimal resource usage prevents DoS via health check abuse
+// - Minimal resource usage
 // - JSON response format ensures consistent monitoring integration
 //
 // Returns HTTP 200 with success status indicating Entry-Hub availability.

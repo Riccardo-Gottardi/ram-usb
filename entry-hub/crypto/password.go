@@ -5,7 +5,8 @@ Implements Argon2id password hashing with cryptographically secure salt
 generation to defend against rainbow table attacks and GPU-based brute force.
 Uses memory-hard algorithm parameters to resist specialized hardware attacks.
 
-TO-DO in package: Move this file to Database-Vault for proper architecture separation
+TO-DO: Move this file to Database-Vault for proper architecture separation
+TO-DO in HashPassword()
 */
 package crypto
 
@@ -48,6 +49,8 @@ func GenerateSalt() (string, error) {
 //
 // Returns hex-encoded hash suitable for database storage.
 func HashPassword(password, salt string) string {
+	// TO-DO: Add pepper integration - passwordWithPepper := password + config.GetPepper()
+	// TO-DO: This prevents offline attacks even if database is compromised
 	// PARAMETER CONVERSION
 	// Convert salt to bytes for Argon2id algorithm requirements
 	saltBytes := []byte(salt)
