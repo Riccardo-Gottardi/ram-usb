@@ -39,6 +39,10 @@ type Config struct {
 // - CA validation ensures certificate chain integrity across distributed services
 //
 // Returns pointer to Config struct with all mTLS connection parameters.
+//
+// TO-DO: In production, load configuration from environment variables
+// TO-DO: Load DATABASE_VAULT_IP from environment variable instead of hardcoded value
+
 func GetConfig() *Config {
 	return &Config{
 		// MTLS SERVER SETTINGS
@@ -50,6 +54,7 @@ func GetConfig() *Config {
 
 		// MTLS CLIENT SETTINGS
 		// Configuration for secure Database-Vault communication
+		// TO-DO: Replace hardcoded IP with os.Getenv("DATABASE_VAULT_IP")
 		DatabaseVaultIP: "100.93.246.70:8445", // TO-DO: Replace with actual Database-Vault Tailscale IP
 		ClientCertFile:  "../certificates/security-switch/client.crt",
 		ClientKeyFile:   "../certificates/security-switch/client.key",

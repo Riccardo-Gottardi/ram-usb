@@ -6,6 +6,8 @@ SSH wire format validation, and cryptographic parameter analysis for
 defense-in-depth security. Provides comprehensive protection against
 injection attacks, weak credentials, and malformed authentication data
 in the distributed mTLS authentication pipeline.
+
+TO-DO in IsWeakPassword()
 */
 
 package utils
@@ -180,6 +182,9 @@ func validateKeyStructure(algorithm string, decoded []byte) bool {
 // - Defense-in-depth validation for Entry-Hub forwarded credentials
 //
 // Returns true if password appears in weak password database.
+//
+// TO-DO: Expand weak password database or integrate with Have I Been Pwned API
+// TO-DO: Consider loading weak passwords from external file or service
 func IsWeakPassword(password string) bool {
 	// WEAK PASSWORD DATABASE
 	// Common passwords from breach analysis and dictionary attacks

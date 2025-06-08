@@ -1,19 +1,11 @@
 /*
-Input validation utilities for user data verification.
-
-This package provides comprehensive validation for:
-- Email format validation using regex patterns
-- SSH public key format and structure validation
-- Password strength and complexity checking
-- Protection against common weak passwords
-*/
-
-/*
 Comprehensive input validation utilities for secure user data verification.
 
 Implements multi-layer validation including RFC-compliant email parsing,
 SSH wire format validation, and cryptographic parameter analysis.
 Provides defense against injection attacks, weak credentials, and malformed authentication data.
+
+TO-DO in IsWeakPassword()
 */
 package utils
 
@@ -191,9 +183,13 @@ func validateKeyStructure(algorithm string, decoded []byte) bool {
 // - Blocks passwords from major data breaches and credential dumps
 //
 // Returns true if password appears in weak password database.
+//
+// TO-DO: Expand weak password database or integrate with Have I Been Pwned API
+// TO-DO: Consider loading weak passwords from external file or service
 func IsWeakPassword(password string) bool {
 	// WEAK PASSWORD DATABASE
 	// Common passwords from breach analysis and dictionary attacks
+	// TO-DO: Expand this list significantly or use external password breach database
 	weakPasswords := []string{
 		"password", "12345678", "qwerty12", "admin123", "12345678",
 		"password123", "admin123", "letmein12", "welcome1",

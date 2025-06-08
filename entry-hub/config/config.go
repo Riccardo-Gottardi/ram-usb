@@ -29,10 +29,12 @@ type Config struct {
 // TO-DO: In production, load this from environment variables or config file.
 // TO-DO: Replace with actual Security-Switch IP and port. This is the macbook Tailscale IP
 // TO-DO: Load pepper from PASSWORD_PEPPER environment variable with fatal error if missing
+// TO-DO: Load SECURITY_SWITCH_IP from environment variable instead of hardcoded value
 func GetConfig() *Config {
 	return &Config{
 		// SECURITY-SWITCH CONNECTION
 		// Use Tailscale private network to prevent external access
+		// TO-DO: Replace hardcoded IP with os.Getenv("SECURITY_SWITCH_IP")
 		SecuritySwitchIP: "100.93.246.69:8444",
 
 		// MTLS CERTIFICATE CONFIGURATION

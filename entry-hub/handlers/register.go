@@ -9,6 +9,8 @@ The registration flow follows this sequence:
 1. Client -> Entry-Hub (HTTPS with server certificates)
 2. Entry-Hub -> Security-Switch (mTLS with mutual certificate verification)
 3. Security-Switch -> Database-Vault (mTLS with mutual certificate verification)
+
+TO-DO in RegisterHandler
 */
 package handlers
 
@@ -32,7 +34,10 @@ import (
 // - Defense-in-depth validation prevents downstream contamination
 //
 // Returns HTTP 201 on successful registration, 4xx on validation errors, 5xx on service errors.
+//
+// TO-DO: Implement rate limiting to prevent brute force attacks (e.g., 5 attempts per IP per minute)
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	// TO-DO: Add rate limiting check here before processing request
 	// REQUEST LOGGING
 	// Audit trail for security monitoring and debugging
 	fmt.Printf("Request: \n\tfrom:\t%s \n\tmethod:\t%s\n", r.RemoteAddr, r.Method)

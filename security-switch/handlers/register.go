@@ -6,6 +6,8 @@ with defense-in-depth validation. Receives mTLS-authenticated registration reque
 from Entry-Hub instances, performs comprehensive security validation, and securely
 forwards validated requests to Database-Vault using mutual TLS authentication.
 Acts as security checkpoint preventing invalid data from reaching storage layer.
+
+TO-DO in RegisterHandler
 */
 package handlers
 
@@ -29,7 +31,11 @@ import (
 // - Comprehensive error categorization prevents information disclosure
 //
 // Returns HTTP 201 on successful registration, 4xx on validation errors, 5xx on service errors.
+//
+// TO-DO: Implement rate limiting to prevent abuse from compromised Entry-Hub instances
+
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	// TO-DO: Add rate limiting check here despite mTLS authentication
 	// HTTP METHOD ENFORCEMENT
 	// Prevent CSRF attacks and enforce REST API semantics
 	if !utils.EnforcePOST(w, r) {
