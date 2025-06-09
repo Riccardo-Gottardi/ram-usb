@@ -4,6 +4,8 @@ mTLS client interface for Entry-Hub to Security-Switch communication.
 Provides secure request forwarding with mutual TLS authentication and certificate
 validation. Implements connection pooling and timeout management for reliable
 distributed service communication within the R.A.M.-U.S.B. architecture.
+
+TO-DO in NewEntryHubClient
 */
 package interfaces
 
@@ -67,6 +69,9 @@ func NewEntryHubClient(securitySwitchIP string, clientCertFile, clientKeyFile, c
 
 	// HTTP CLIENT SETUP
 	// Create client with mTLS transport and connection timeout
+	//
+	// TO-DO: Add connection pooling to prevent "too many open files" crashes
+	// TO-DO: MaxIdleConns: 10, MaxIdleConnsPerHost: 3, IdleConnTimeout: 30*time.Second
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: tlsConfig,

@@ -5,6 +5,8 @@ Implements secure REST API gateway with TLS encryption for clients and mTLS
 client capabilities for distributed service communication. Serves as the
 public-facing entry point in the zero-trust inter-service architecture
 where all service-to-service communication uses mutual TLS authentication.
+
+TO-DO in main: IPER-DANGEROUS SECURITY ISSUE:
 */
 package main
 
@@ -52,7 +54,12 @@ func main() {
 
 	// HTTPS SERVER STARTUP
 	// Start TLS-encrypted server on all interfaces with certificate authentication
-	// Listen on 0.0.0.0:8443 - accessible only via Tailscale private network
+	// Listen on 0.0.0.0:8443
 	// Uses default HTTP multiplexer with registered route handlers
+	//
+	// TO-DO: Implement triple-layer security (Defense-in-Depth)
+	// TO-DO STEP 1: Change bind from "0.0.0.0:8443" to "127.0.0.1:8443" (localhost only)
+	// TO-DO STEP 2: Setup Tailscale serve: `tailscale serve https / http://localhost:8443`
+	// TO-DO STEP 3: Add firewall rules to block non-Tailscale traffic as backup
 	log.Fatal(http.ListenAndServeTLS("0.0.0.0:8443", "../certificates/entry-hub/server.crt", "../certificates/entry-hub/server.key", nil))
 }
