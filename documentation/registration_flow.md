@@ -1,6 +1,6 @@
 # Complete System Flow  
 **Client → Entry-Hub → Security-Switch → Database-Vault**
-
+![Complete-System-Flow](Images/Complete-System-Flow.jpg)
 1. Client sends HTTPS request to Entry-Hub  
 2. Entry-Hub validates and forwards request via mTLS to Security-Switch  
 3. Security-Switch validates (defense-in-depth) and forwards via mTLS to Database-Vault  
@@ -39,7 +39,7 @@
 ## FORWARD TO SECURITY-SWITCH
 
 - **Initialize mTLS client:** certificates for Security-Switch  
-- **Certificate validation:** verify Security-Switch certificate chain, check organization = "SecuritySwitch"
+- **Certificate validation:** verify Security-Switch certificate chain, check organization="SecuritySwitch"
 - **Create mTLS request:** POST to Security-Switch `/api/register`  
 - **Send via mTLS:** authenticated connection to Security-Switch  
 - **Receive response:** success/error from Security-Switch  
@@ -58,7 +58,7 @@
 ## STARTUP (`main.go`)
 
 - **Load configuration:** mTLS server certificates, mTLS client certs for Database-Vault  
-- **Validate configuration:** check certificate files exist, validate cert/key pairs, test Database-Vault connectivity
+- **Validate configuration:** check certificate files exist, validate cert/key pairs.
 - **Configure mTLS server:** accept only authenticated Entry-Hub connections  
 - **Configure mTLS client:** certificates for communicating with Database-Vault  
 - **Start mTLS server on port 8444:** certificate-only connections  
@@ -66,8 +66,8 @@
 ## ENTRY-HUB REQUEST HANDLING (`/api/register`)
 
 - Verify mTLS: check Entry-Hub certificate (middleware)  
-- **Certificate validation: verify certificate chain, CA validation, check organization = "EntryHub"**
-- **Authentication logging: log successful/failed authentication attempts with certificate details**
+- **Certificate validation:** verify certificate chain, CA validation, check organization = "EntryHub"
+- **Authentication logging:** log successful/failed authentication attempts with certificate details
 - **Validate HTTP method:** accept **POST** only  
 - **Read request body:** JSON with email, password, SSH key  
 - **Parse JSON:** convert into `RegisterRequest` struct  
@@ -84,7 +84,7 @@
 ## FORWARD TO DATABASE-VAULT
 
 - **Initialize mTLS client:** certificates for Database-Vault  
-- **Certificate validation:** verify Database-Vault certificate chain, check organization = "DatabaseVault"
+- **Certificate validation:** verify Database-Vault certificate chain, check organization="DatabaseVault"
 - **Create mTLS request:** POST to Database-Vault `/api/store-user`  
 - **Send via mTLS:** authenticated connection to Database-Vault  
 - **Receive response:** success/error from Database-Vault  
@@ -103,7 +103,7 @@
 ## STARTUP (`main.go`)
 
 - Load configuration: mTLS certificates, encryption key, database URL  
-- **Validate configuration:** check certificate files exist, validate cert/key pairs, verify database connectivity
+- **Validate configuration:** check certificate files exist, validate cert/key pairs
 - **Validate encryption key:** check AES-256 key from environment variable  
 - **Key validation:** ensure 32-byte length, entropy check, format verification
 - **Mask database credentials in logs:** hide username/password, preserve host/port/database for debugging
@@ -112,8 +112,8 @@
 
 ## REQUEST HANDLING (`/api/store-user`)
 
-- Verify mTLS: check Security-Switch certificate (middleware)  
-- **Certificate validation:** verify certificate chain, CA validation, check organization = "SecuritySwitch"
+- **Verify mTLS:** check Security-Switch certificate (middleware)  
+- **Certificate validation:** verify certificate chain, CA validation, check organization="SecuritySwitch"
 - **Authentication logging:** log successful/failed authentication attempts with certificate details
 - **Validate HTTP method:** accept **POST** only  
 - **Read request body:** JSON with email, password, SSH key  

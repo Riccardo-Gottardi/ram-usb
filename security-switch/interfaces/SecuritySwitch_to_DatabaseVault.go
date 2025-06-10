@@ -5,6 +5,8 @@ Provides secure request forwarding with mutual TLS authentication and certificat
 validation for the second hop in the distributed authentication pipeline.
 Implements connection pooling, timeout management, and structured error handling
 for reliable zero-trust communication within the R.A.M.-U.S.B. architecture.
+
+TO-DO in NewDatabaseVaultClient
 */
 package interfaces
 
@@ -80,6 +82,9 @@ func NewDatabaseVaultClient(databaseVaultIP string, clientCertFile, clientKeyFil
 
 	// HTTP CLIENT SETUP
 	// Create client with mTLS transport and connection timeout
+	//
+	// TO-DO: Add connection pooling to prevent "too many open files" crashes
+	// TO-DO: MaxIdleConns: 10, MaxIdleConnsPerHost: 3, IdleConnTimeout: 30*time.Second
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: tlsConfig,
