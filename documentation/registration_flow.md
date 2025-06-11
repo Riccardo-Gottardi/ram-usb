@@ -130,23 +130,21 @@
 
 ## ENCRYPTION AND HASHING
 
-- **Derive operation-specific keys:** use HKDF-SHA256 with master key
-  - **Email encryption key:** 32 bytes, context "email-encryption-v1"
-  - **Email nonce:** 12 bytes, context "email-nonce-v1"
-- **Key derivation ensures:** deterministic encryption for consistent database lookup
-- **Encrypt email:** AES-256-GCM deterministic encryption for DB lookup  
-- **Email encryption process:** derived key + fixed nonce = same output for same email
+- **Hash email:** SHA-256 hash for fast database indexing and primary key functionality
+- **Encrypt email:** AES-256-GCM secure encryption with random salt and nonce
+- **Email encryption process:** random salt + random nonce = different output for same email
+- **Key derivation ensures:** unique encryption per user while maintaining decryption capability
 - **Generate password salt:** 16 bytes cryptographically secure random  
 - **Hash password:** Argon2id with generated salt  
 - **Password hashing parameters:** 1 iteration, 32MB memory, 4 threads, 32-byte output
 
 ## STORAGE (when PostgreSQL implemented)
 
-- **Check for duplicate email:** query with encrypted email  
-- **Duplicate detection:** deterministic encryption enables exact match queries
+- **Check for duplicate email hash:** query with SHA-256 email hash
+- **Duplicate detection:** email hash enables exact match queries without exposing emails
 - **Check for duplicate SSH key:** query with SSH public key  
 - **Create user record:** encrypted email, password hash, salt, SSH key, timestamps  
-- **User record structure:** encrypted_email (PK), password_hash, password_salt, ssh_public_key, created_at, updated_at
+- **User record structure:** email_hash (PK), encrypted_email, email_salt, password_hash, password_salt, ssh_public_key, created_at, updated_at
 - **Save in database:** atomic transaction  
 - **Storage transaction:** ensure complete user record creation or rollback
 
@@ -171,7 +169,8 @@
 - **Master key source**: `RAMUSB_ENCRYPTION_KEY` environment variable (64 hex chars = 32 bytes)
 - **Key derivation**: HKDF-SHA256 for operation-specific keys
 - **Context strings**: prevent key reuse across different operations
-- **Deterministic encryption**: enables database lookup with consistent results
+- **SHA-256 email hashing**: enables fast database lookup without exposing email content
+- **Non-deterministic email encryption**: provides maximum security with random salt per user
 
 ## Error Response Hierarchy
 - **HTTP 400**: validation errors (bad input)
