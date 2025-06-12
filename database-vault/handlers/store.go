@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"runtime"       // memory cleenup
+	"runtime/debug" // memory cleenup
 	"strings"
 	"time"
 )
@@ -246,6 +248,16 @@ func StoreUserHandler(w http.ResponseWriter, r *http.Request) {
 	// SUCCESS RESPONSE
 	// Log successful registration and send confirmation to Security-Switch
 	log.Printf("User credentials successfully stored: %s (hash: %s)", req.Email, emailHash[:16]+"...")
+
+	// MEMORY CLEANUP - Force garbage collection after crypto operations
+	// This is critical after Argon2id which uses 32MB per request
+	go func() {
+		time.Sleep(1 * time.Second) // Wait for response to be sent
+		runtime.GC()
+		debug.FreeOSMemory()
+		log.Printf("Memory cleanup completed after user registration")
+	}()
+
 	utils.SendSuccessResponse(w, http.StatusCreated, "User credentials stored successfully!")
 
 	// AUDIT LOGGING
