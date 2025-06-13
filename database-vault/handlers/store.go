@@ -45,7 +45,7 @@ func StoreUserHandler(w http.ResponseWriter, r *http.Request) {
 	// TO-DO: Add rate limiting check here despite mTLS authentication
 
 	// HTTP METHOD ENFORCEMENT
-	// Prevent CSRF attacks and enforce REST API semantics
+	// Enforce REST API semantics
 	if !utils.EnforcePOST(w, r) {
 		return // Sends HTTP 405 Method Not Allowed and logs violation
 	}

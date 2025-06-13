@@ -158,6 +158,86 @@
 
 ---
 
+# Email Encryption Architecture
+
+## Master Key and Key Derivation System
+
+Database-Vault implements **non-deterministic email encryption** using AES-256-GCM with unique keys per user email, ensuring identical email addresses produce completely different ciphertext across users.
+
+### Master Key Configuration
+- **Source**: `RAMUSB_ENCRYPTION_KEY` environment variable (64 hex characters = 32 bytes)
+- **Algorithm**: AES-256 master key for cryptographic operations
+- **Validation**: 32-byte length enforcement, entropy checks, secure format verification
+- **Generation**: `openssl rand -hex 32` for production deployment
+
+### Per-Email Key Derivation Process
+
+Each email address gets a **unique encryption key** through this secure process:
+
+1. **Random Salt Generation**
+   - 16 bytes cryptographically secure random
+   - Unique salt per user email
+
+2. **Key Derivation (HKDF-SHA256)**
+   - Input: masterKey (32 bytes) + salt (16 bytes) + context string
+   - Context: `"email-encryption-secure-v1"` for operation separation
+   - Output: 32-byte AES-256 key unique to this email
+
+3. **Random Nonce Generation**
+   - 12 bytes for AES-GCM mode
+   - Random nonce per encryption operation
+
+## Email Encryption Process
+
+### Encryption Flow
+**Input**: email address + master key
+
+1. Generate random salt (16 bytes)
+2. Derive unique key using HKDF-SHA256(masterKey, salt, context)
+3. Generate random nonce (12 bytes)
+4. Encrypt with AES-256-GCM
+5. Combine: nonce + ciphertext + authentication tag
+6. Encode as base64 for database storage
+7. Store encrypted email (base64) and salt (hex) in database
+
+**Output**: Different ciphertext every time, even for identical emails
+
+### Decryption Flow
+**Input**: encrypted email (base64) + salt (hex) + master key
+
+1. Decode salt from hex to bytes
+2. Reproduce the same encryption key using HKDF-SHA256(masterKey, salt, context)
+3. Decode ciphertext from base64 to bytes
+4. Extract nonce from first 12 bytes of ciphertext
+5. Extract encrypted data from remaining bytes
+6. Decrypt with AES-256-GCM using reproduced key and extracted nonce
+7. Verify authentication tag (automatic in GCM mode)
+
+**Output**: Original email address or authentication failure
+
+## Security Properties
+
+### Non-Deterministic Encryption
+- **Same Email, Different Output**: Identical emails across users produce completely different ciphertext
+- **Random Salt Per User**: Each user gets unique encryption key even for same email
+- **Random Nonce Per Operation**: Additional randomness prevents pattern analysis
+
+### Cryptographic Guarantees
+- **Confidentiality**: AES-256 encryption prevents plaintext email exposure
+- **Authenticity**: GCM authentication tag prevents tampering and forgery
+- **Forward Secrecy**: Derived keys not stored; regenerated from salt when needed
+- **Zero-Knowledge**: Only master key is the critical secret component
+- **Fast Indexing**: SHA-256 email hash enables database queries without decryption
+
+### Key Management Security
+- **Master Key**: Single point of secret (environment variable only)
+- **Derived Keys**: Generated on-demand, never permanently stored
+- **Salt Storage**: Safe to store in database (used for key derivation during decryption)
+- **Context Separation**: Different operations use different context strings
+- **Memory Cleanup**: Sensitive key material cleared after cryptographic operations
+
+---
+
 # Technical Implementation Details
 
 ## Certificate Organization Validation

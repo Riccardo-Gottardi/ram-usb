@@ -47,7 +47,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// HTTP METHOD ENFORCEMENT
-	// Prevent CSRF attacks via GET requests
+	// Enforce REST API semantics
 	if !utils.EnforcePOST(w, r) {
 		return
 	}
