@@ -40,8 +40,8 @@ All communication between components is secured with **mutual TLS (mTLS)**.
 ⸻
 
 Authors
-	•	Francesco Verrengia
-	•	Riccardo Gottardi
+	•	[@Verryx-02](https://github.com/Verryx-02)
+	•	[@Riccardo-Gottardi](https://github.com/Riccardo-Gottardi)
 
 ⸻
 
